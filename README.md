@@ -1,103 +1,181 @@
-# formatcoords [![Build Status](https://travis-ci.org/nerik/formatcoords.svg?branch=master)](https://travis-ci.org/nerik/formatcoords)
+# CoordinateFormat [![CI](https://github.com/openwatersio/coordinate-format/actions/workflows/ci.yml/badge.svg)](https://github.com/openwatersio/coordinate-format/actions/workflows/ci.yml)
 
-![](https://raw.githubusercontent.com/nerik/formatcoords/master/doc/mercator.jpg)
+A simple and flexible TypeScript library to format decimal latitude/longitude coordinates into degrees/minutes/seconds (DMS) and other coordinate formats.
 
-A simple and flexible tool to format decimal lat/lon coordinates into degrees/minutes/seconds formats (like DMS), using a [moment.js](http://momentjs.com/)-like API.
+## Install
 
-For geo hipsters that think that **48° 54′ 16.016″ S 71° 0′ 56.250″ W** looks way more awesome than **-48.9044488,-71.015625**.
-
-## install: node/browserify
-
-```
-npm install formatcoords
+```bash
+npm install coordinate-format
 ```
 
-## use
+## Usage
 
-```
-var formatcoords = require('formatcoords');
-formatcoords(40.76,-73.984).format();
-//40° 45′ 36.000″ N 73° 59′ 2.400″ W
-```
+```typescript
+import { CoordinateFormat } from "coordinate-format";
 
-#### parsing
-
-The ```formatcoords(coord1[, coord2, lonlat])``` method accepts decimal lat/lon coordinates in several formats :
-- ```formatcoords([lat, lon])```: an array of floats.
-- ```formatcoords([lon, lat], true)```: an array of floats. First longitude, then latitude. Useful for use with GeoJSON, for example.
-- ```formatcoords(lat, lon)``` : floats.
-- ```formatcoords(lon, lat, true)``` : floats. First longitude, then latitude. Useful for use with GeoJSON, for example.
-- ```formatcoords('latlon')``` : ```latlon``` is a string in "lat,lon" format.
-- ```formatcoords({lat: lat, lng: lon}``` an object with ```lat``` and ```lng``` properties (Leaflet LatLng object)
-
-#### formatting
-
-```
-var coords = formatcoords(27.725499,-18.024301);
+const formatter = new CoordinateFormat();
+const [lon, lat] = formatter.format(149.128684, -35.282);
+console.log(lon, lat); // "149° 7.721′ E" "35° 16.920′ S"
 ```
 
-```
-coords.format(format, {options})
-```
+## API
 
-Default output format is DMS (degrees minutes seconds), with a space to separate lat and lon, and 5 decimal places :
-```
-coords.format()
-//27° 43′ 31.796″ N 18° 1′ 27.484″ W
+### Creating a Format Instance
+
+```typescript
+const formatter = new CoordinateFormat(format, options);
 ```
 
+**Parameters:**
 
-*Available short formats:*
+- `format` (optional, default: `"minutes"`): A format string or alias
+- `options` (optional):
+  - `precision`: Number of decimal places (default: 3)
+  - `labels`: Custom labels for degrees, minutes, seconds, and directions
 
-|                       | Token   | Output |
-|----------------------:|:--------|--------|
-|degrees minutes seconds (DMS)|FFf        |27° 43′ 31.796″ N 18° 1′ 27.484″ W        |
-|degrees decimal minutes|Ff       |27° 43.529933333333′ N -18° 1.4580666666667′ W       |
-|decimal degrees        |f        |27.725499° N 18.024301° W        |
+### Format Aliases
 
-*Custom formats:*
+| Alias       | Output                                     | Example                               |
+| ----------- | ------------------------------------------ | ------------------------------------- |
+| `"seconds"` | Full DMS with direction (default)          | `35° 16′ 55.200″ N 149° 7′ 43.262″ E` |
+| `"minutes"` | Degrees and decimal minutes with direction | `35° 16.920′ N 149° 7.721′ E`         |
+| `"degrees"` | Decimal degrees with direction             | `35.282° N 149.129° E`                |
 
-The following values are available for both latitudes and longitudes:
+### Format Tokens
 
-|                               | Token   | Output |
-|------------------------------:|:--------|--------|
-|degrees                        |D        |27        |
-|degrees with unit              |DD       |27°        |
-|decimal degrees                |d        |27.725499        |
-|decimal degrees with unit      |dd       |27.725499°        |
-|minutes                        |M        |7        |
-|minutes with unit              |MM       |7′        |
-|decimal minutes                |m        |7.63346        |
-|decimal minutes with unit      |mm       |7.63346′        |
-|decimal seconds                |s        |31.796        |
-|decimal seconds with unit      |ss       |31.796″        |
-|direction                      |X        |[N,S], [E,W]        |
-|minus sign (west of Greenwich and south of equator)|-        |[-]        |
+You can create custom format strings using the following tokens:
 
-*Custom format example*
+| Token | Output                                          | Example            |
+| ----- | ----------------------------------------------- | ------------------ |
+| `D`   | Integer degrees                                 | `35`               |
+| `DD`  | Integer degrees with symbol                     | `35°`              |
+| `d`   | Decimal degrees                                 | `35.282`           |
+| `dd`  | Decimal degrees with symbol                     | `35.282°`          |
+| `M`   | Integer minutes                                 | `16`               |
+| `MM`  | Integer minutes with symbol                     | `16′`              |
+| `m`   | Decimal minutes                                 | `16.920`           |
+| `mm`  | Decimal minutes with symbol                     | `16.920′`          |
+| `s`   | Decimal seconds                                 | `55.200`           |
+| `ss`  | Decimal seconds with symbol                     | `55.200″`          |
+| `X`   | Direction (N/S for latitude, E/W for longitude) | `N`, `S`, `E`, `W` |
+| `-`   | Negative sign (for negative values)             | `-`                |
 
+### Methods
+
+#### `format(longitude, latitude)` or `format([longitude, latitude])`
+
+Formats a coordinate pair and returns `[longitudeString, latitudeString]`.
+
+```typescript
+const formatter = new CoordinateFormat("minutes");
+
+// Arguments form
+const [lon, lat] = formatter.format(149.128684, -35.282);
+
+// Array form
+const [lon, lat] = formatter.format([149.128684, -35.282]);
 ```
-coord.format('-D M s');
-//-35 16 55.20000 149 7 43.26240
+
+#### `longitude(value)`
+
+Formats a single longitude value.
+
+```typescript
+const formatter = new CoordinateFormat("degrees");
+console.log(formatter.longitude(149.128684)); // "149.129° E"
 ```
 
-###### options
-| Option Name              | Description   | Default & type |
-|-------------------------:|:--------------|---------|
-|latLonSeparator         | The separator to use between the lat and lon values | ' ' `string` |
-|decimalPlaces           | The number of decimal places to return | 5 `number`|
+#### `latitude(value)`
 
-*Custom format example with additional options*
+Formats a single latitude value.
 
-```
-coord.format('DD MM ss X', {latLonSeparator: ', ',  decimalPlaces: 0);
-//35° 43′ 49″ S, 86° 1′ 55″ E
+```typescript
+const formatter = new CoordinateFormat("degrees");
+console.log(formatter.latitude(-35.282)); // "35.282° S"
 ```
 
+#### `parse(longitudeString, latitudeString)`
 
-## Browser support
-IE <= 8 not supported.
+Parses formatted coordinate strings back into decimal degree numbers. Returns `[longitude, latitude]` or `null` if parsing fails.
 
-## DMS to decimal
+```typescript
+const formatter = new CoordinateFormat("minutes");
+const coords = formatter.parse("149° 7.721′ E", "35° 16.920′ S");
+// coords: [149.128683, -35.282]
+```
 
-Use [parse-dms](https://www.npmjs.com/package/parse-dms).
+The parse method supports all formats that can be generated by the format method:
+
+```typescript
+// Parse DMS (seconds format)
+formatter.parse("149° 7′ 43.262″ E", "35° 16′ 55.200″ S");
+
+// Parse decimal degrees
+formatter.parse("149.129° E", "35.282° S");
+
+// Parse with negative signs
+formatter.parse("-149 7 43.262", "-35 16 55.200");
+```
+
+## Examples
+
+### Basic Usage
+
+```typescript
+import { CoordinateFormat } from "coordinate-format";
+
+const formatter = new CoordinateFormat();
+const [lon, lat] = formatter.format(149.128684, -35.282);
+console.log(lon, lat); // "149° 7.721′ E" "35° 16.920′ S"
+```
+
+### Custom Format String
+
+```typescript
+const formatter = new CoordinateFormat("-D M s");
+const [lon, lat] = formatter.format(149.128684, -35.282);
+console.log(lon, lat); // "149 7 43.262" "-35 16 55.200"
+```
+
+### Custom Precision
+
+```typescript
+const formatter = new CoordinateFormat("seconds", { precision: 0 });
+const [lon, lat] = formatter.format(149.128684, -35.282);
+console.log(lon, lat); // "149° 7′ 43″ E" "35° 16′ 55″ S"
+```
+
+### Custom Labels
+
+```typescript
+const formatter = new CoordinateFormat("DD MM ss X", {
+  labels: {
+    latitude: ["Norte", "Sur"],
+    longitude: ["Este", "Oeste"],
+    degrees: "d",
+    minutes: "m",
+    seconds: "s",
+  },
+});
+const [lon, lat] = formatter.format(149.128684, -35.282);
+console.log(lon, lat); // "149d 7m 43.262s Este" "35d 16m 55.200s Sur"
+```
+
+### Parsing Coordinates
+
+```typescript
+const formatter = new CoordinateFormat("minutes");
+
+// Parse formatted strings back to decimal
+const coords = formatter.parse("149° 7.721′ E", "35° 16.920′ S");
+console.log(coords); // [149.128683, -35.282]
+
+// Round-trip formatting and parsing
+const [lonStr, latStr] = formatter.format(149.128684, -35.282);
+const [lon, lat] = formatter.parse(lonStr, latStr)!;
+console.log(lon, lat); // 149.128684, -35.282
+```
+
+## License
+
+This project is [licensed under the MIT License](./LICENSE). It is a fork of [formatcoords](https://github.com/nerik/formatcoords) by @nerik.
