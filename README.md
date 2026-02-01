@@ -35,11 +35,11 @@ const formatter = new CoordinateFormat(format, options);
 
 ### Format Aliases
 
-| Alias       | Output                                     | Example                               |
-| ----------- | ------------------------------------------ | ------------------------------------- |
-| `"seconds"` | Full DMS with direction (default)          | `35° 16′ 55.200″ N 149° 7′ 43.262″ E` |
-| `"minutes"` | Degrees and decimal minutes with direction | `35° 16.920′ N 149° 7.721′ E`         |
-| `"degrees"` | Decimal degrees with direction             | `35.282° N 149.129° E`                |
+| Alias       | Output                      | Example                               |
+| ----------- | --------------------------- | ------------------------------------- |
+| `"seconds"` | Full DMS                    | `35° 16′ 55.200″ N 149° 7′ 43.262″ E` |
+| `"minutes"` | Degrees and decimal minutes | `35° 16.920′ N 149° 7.721′ E`         |
+| `"degrees"` | Decimal degrees             | `35.282° N 149.129° E`                |
 
 ### Format Tokens
 
